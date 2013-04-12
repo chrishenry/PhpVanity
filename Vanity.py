@@ -1,3 +1,7 @@
+# TODO: function for correctly spacing arrays
+# TODO: autocomment generator for closing curlies
+# TODO: array formatter to add 2 soft tabs
+# TODO: Improve upon current =s liner upper
 import sublime
 import sublime_plugin
 
@@ -60,6 +64,8 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             r = controlWord + ' ' + brace
             replacement = code.replace(s, r, 1)
             replacement = replacement.replace('){', ') {', 1)
+
+            # TODO: space the inside of the parens, too.
 
             # replace and we're done
             self.view.replace(edit, lines_sel, replacement)
