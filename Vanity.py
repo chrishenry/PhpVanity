@@ -2,6 +2,10 @@
 # TODO: autocomment generator for closing curlies
 # TODO: array formatter to add 2 soft tabs
 # TODO: Improve upon current =s liner upper
+# TODO: Figure out how to handle nested arrays
+# TODO: understand class structure better, there's def some vars that could be shared
+# TODO: look at this https://bitbucket.org/blackaura/pyparsephp
+# TODO: look at this https://github.com/ramen/phply
 import sublime
 import sublime_plugin
 
@@ -31,33 +35,62 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             lines = self.view.lines(region)
 
             # Check it's there's more than one line
+            # This might not be necessary
             if len(lines) <= 1:
                 print "Wrong # of lines"
                 return()
 
-            # find if there's an array declaration in the selection,
-            #   and what line it's on
-            found_line = False
-            for line in lines:
-                if self.view.substr(line).find('array(') > 0:
-                    found_line = line
+            array_region = self.find_array_region(region)
 
-            if found_line is False:
-                array_region = self.find_array_region(region)
-            else:
-                print self.view.substr(found_line)
+            # Figure out how much whitespace is in front of the declaration
+            array_lines = self.view.lines(array_region)
+            declaration = self.view.substr(array_lines[0])
 
-            full_array = self.view.substr(array_region)
+            whitespace = 0
+            for c in declaration:
+                if c == '':
+                    ++whitespace
 
-            print full_array
+            # Check if there's valid indentation
+            # TODO: show the user something, cuz this is bad.
+            if (whitespace / 2) != 0:
+                print "we have some bad indentation here"
+
+            # TODO: make this a configuration var
+            desired_indent = whitespace + 4
+
+            # iterate through the lines, and indent accordingly
+            # TODO: ignore nested arrays
+            replacement = ''
+            for idx, val in enumerate(array_lines):
+
+                line = self.view.substr(val)
+
+                # Skip the declaration, as it's the only that's correct
+                if idx == 0:
+                    replacement += line + "\n"
+                    continue
+
+                # make the closing match the opening
+                if idx == (len(array_lines) - 1):
+                    line = line.lstrip().rstrip()
+                    line = line.rjust(len(line)+whitespace, ' ')
+                    replacement += line + "\n"
+                    continue
+
+                # strip whitespace from left hand side, and add it back
+                line = line.lstrip().rstrip()
+                line = line.rjust(len(line)+desired_indent, ' ')
+
+                replacement += line + "\n"
+
+            self.view.replace(edit, array_region, replacement)
 
     # Need to find where the array( bit is declared
+    # TODO: look for nested arrays, by
     def find_array_region(self, region):
-        beginning = region.begin()
-        end = region.end()
-
-        line_above = self.view.line(beginning-1)
-        line_below = self.view.line(end+1)
+        line_above = self.view.line(region.begin())
+        line_below = self.view.line(region.end())
 
         opening = False
         while opening is False:
