@@ -1,0 +1,5 @@
+{
+  // Arrays get 2 soft tab indents, or 4 spaces
+  "array_indent": 4
+
+}
