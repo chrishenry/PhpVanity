@@ -50,13 +50,15 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             # TODO: probably need a better way to do this
             whitespace = 0
             for c in declaration:
-                if c == '':
-                    ++whitespace
+                if c == ' ':
+                    whitespace += 1
+                else:
+                    break
 
             # Check if there's valid indentation
             # TODO: show the user something, cuz this is bad.
-            if (whitespace / 2) != 0:
-                print "we have some bad indentation here"
+            # if (whitespace / 2) != 1:
+            #     print "we have some bad indentation here"
 
             # TODO: make this a configuration var
             desired_indent = whitespace + 4
@@ -113,6 +115,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
         while opening is False:
             if self.view.substr(line_above).find('array') != -1:
                 opening = line_above
+                break
             elif line_above.begin() - 1 < 0:
                 print "out of bounds on top"
                 break
@@ -123,6 +126,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
         while closing is False:
             if self.view.substr(line_below).find(');') != -1:
                 closing = line_below
+                break
             elif line_below.end() + 1 > self.view.size():
                 print "out of bounds on bottom"
                 break
