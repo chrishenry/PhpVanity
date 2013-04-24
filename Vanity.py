@@ -6,6 +6,7 @@
 # TODO: understand class structure better, there's def some vars that could be shared
 # TODO: look at this https://bitbucket.org/blackaura/pyparsephp
 # TODO: look at this https://github.com/ramen/phply
+# TODO: get proper line endings
 import sublime
 import sublime_plugin
 
@@ -46,6 +47,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             array_lines = self.view.lines(array_region)
             declaration = self.view.substr(array_lines[0])
 
+            # TODO: probably need a better way to do this
             whitespace = 0
             for c in declaration:
                 if c == '':
@@ -61,40 +63,55 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
             # iterate through the lines, and indent accordingly
             # TODO: ignore nested arrays
-            replacement = ''
+            opening = ''
+            items = ''
+            closing = ''
             for idx, val in enumerate(array_lines):
 
                 line = self.view.substr(val)
 
-                # Skip the declaration, as it's the only that's correct
+                # Skip the declaration, as it's the only line correctly indented
                 if idx == 0:
-                    replacement += line + "\n"
+
+                    # properly format array openings
+                    opening = line.replace('array (', 'array(') + "\n"
                     continue
 
                 # make the closing match the opening
                 if idx == (len(array_lines) - 1):
                     line = line.lstrip().rstrip()
                     line = line.rjust(len(line)+whitespace, ' ')
-                    replacement += line + "\n"
+                    closing = line + "\n"
                     continue
 
                 # strip whitespace from left hand side, and add it back
                 line = line.lstrip().rstrip()
                 line = line.rjust(len(line)+desired_indent, ' ')
 
-                replacement += line + "\n"
+                items += line + "\n"
 
-            self.view.replace(edit, array_region, replacement)
+            self.view.replace(edit, array_region, opening + items + closing)
+
+            # Get the modified region
+            modified_region = self.find_array_region(array_region)
+
+            # remove the opening and closing lines
+            modified_lines = self.view.lines(modified_region)
+            modified_lines.pop()
+            del modified_lines[0]
+
+            self.view.run_command("alignment", {'begin': modified_lines[0].begin(), 'end': modified_lines[-1].end()})
 
     # Need to find where the array( bit is declared
     # TODO: look for nested arrays, by
+    # TODO: start in the middle of the selection, as someone could've selected more
     def find_array_region(self, region):
         line_above = self.view.line(region.begin())
         line_below = self.view.line(region.end())
 
         opening = False
         while opening is False:
-            if self.view.substr(line_above).find('array(') != -1:
+            if self.view.substr(line_above).find('array') != -1:
                 opening = line_above
             elif line_above.begin() - 1 < 0:
                 print "out of bounds on top"
