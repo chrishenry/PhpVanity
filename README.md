@@ -28,4 +28,23 @@ if( $something ){
 if ( $something ) {
 ```
 
+- Cmd-alt-a will attempt to fix spacing on arrays. Nested arrays aren't supported yet. Requires a forked version of the [alignment plugin](https://github.com/chrishenry/sublime_alignment).
+
+``` php
+$array = array (
+'host' => '',
+  'port' => '',
+    'disabled' => true,
+      );
+```
+
+``` php
+$array = array(
+    'host' => '',
+    'port' => '',
+    'disabled' => true,
+);
+```
+
+
 ![Vanity](http://www.apetogentleman.com/wp-content/uploads/2010/12/Patrick-Bateman-2.jpg)
