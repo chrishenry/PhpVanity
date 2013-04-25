@@ -1,6 +1,4 @@
-# TODO: function for correctly spacing arrays
 # TODO: autocomment generator for closing curlies
-# TODO: array formatter to add 2 soft tabs
 # TODO: Improve upon current =s liner upper
 # TODO: Figure out how to handle nested arrays
 # TODO: understand class structure better, there's def some vars that could be shared
@@ -12,6 +10,10 @@ import sublime_plugin
 
 
 class VanityPhpCommand(sublime_plugin.TextCommand):
+
+    control_tokens = ['if', 'for', 'foreach', 'switch']
+
+    comment_tokens = ['//', '#', '/*', '*/']
 
     def run(self, edit, **kwargs):
 
@@ -28,18 +30,16 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
         else:
             print "Vanity doesn't know what to do."
 
+    # TODO: handle the situation where there's a array element on the same line as the array keyword
     def array_format(self, edit):
+        print "array_format"
+
         sels = self.view.sel()
+        settings = sublime.load_settings("Default.sublime-settings")
+
         for sel in sels:
 
             region = self.view.line(sel)
-            lines = self.view.lines(region)
-
-            # Check it's there's more than one line
-            # This might not be necessary
-            if len(lines) <= 1:
-                print "Wrong # of lines"
-                return()
 
             array_region = self.find_array_region(region)
 
@@ -60,8 +60,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             # if (whitespace / 2) != 1:
             #     print "we have some bad indentation here"
 
-            # TODO: make this a configuration var
-            desired_indent = whitespace + 4
+            desired_indent = whitespace + settings.get('array_indent')
 
             # iterate through the lines, and indent accordingly
             # TODO: ignore nested arrays
@@ -108,6 +107,8 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
     # TODO: look for nested arrays, by
     # TODO: start in the middle of the selection, as someone could've selected more
     def find_array_region(self, region):
+        print "find_array_region"
+
         line_above = self.view.line(region.begin())
         line_below = self.view.line(region.end())
 
@@ -139,6 +140,8 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             return False
 
     def control_statements(self, edit):
+        print "control_statements"
+
         sels = self.view.sel()
         for sel in sels:
 
@@ -148,7 +151,6 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
             # TODO: expand this to switches, elses, etc, and also manage
             #   spacing between curlies, same as parens
-            controlWords = ['if', 'for', 'foreach']
             brace = '('
 
             # Check it's only 2 lines
@@ -157,15 +159,14 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
                 return()
 
             # Check there are no comments in our selection
-            comments = ['//', '#', '/*', '*/']
-            for comment in comments:
+            for comment in self.comment_tokens:
                 if code.find(comment) != -1:
                     print "There's some comments in here"
                     return
 
             # Check that there's a control statement we know
             controlWord = False
-            for controlWord_ in controlWords:
+            for controlWord_ in self.control_tokens:
                 if codeLinesRaw[0].find(controlWord_) != -1:
                     controlWord = controlWord_
                     break
@@ -186,16 +187,14 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             self.view.replace(edit, lines_sel, replacement)
 
     def single_line_curlies(self, edit):
+        print "single_line_curlies"
+
         sels = self.view.sel()
         for sel in sels:
-
-            print "SingleLineCurliesCommand"
 
             lines_sel = self.view.line(sel)
             code = self.view.substr(lines_sel)
             codeLinesRaw = code.splitlines()
-
-            controlWords = ['if', 'for', 'foreach']
 
             # Check it's only 2 lines
             if len(codeLinesRaw) != 2:
@@ -203,20 +202,17 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
                 return()
 
             # Check there are no comments in either line
-            comments = ['//', '#', '/*', '*/']
-            for comment in comments:
+            for comment in self.comment_tokens:
                 if code.find(comment) != -1:
                     print "There's some comments in here"
                     return
 
             # Check that there's control structure
             controlWord = False
-            for controlWord_ in controlWords:
+            for controlWord_ in self.control_tokens:
                 if codeLinesRaw[0].find(controlWord_) != -1:
                     controlWord = controlWord_
                     break
-
-            print controlWord
 
             if controlWord is False:
                 print "No controlWord"
