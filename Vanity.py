@@ -86,7 +86,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
                 if idx == (len(array_lines) - 1):
                     line = line.lstrip().rstrip()
                     line = line.rjust(len(line)+whitespace, ' ')
-                    closing = line + "\n"
+                    closing = line
                     continue
 
                 # strip whitespace from left hand side, and add it back
