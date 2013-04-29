@@ -1,15 +1,18 @@
 # TODO: autocomment generator for closing curlies
-# TODO: Improve upon current =s liner upper
 # TODO: Figure out how to handle nested arrays
 # TODO: understand class structure better, there's def some vars that could be shared
 # TODO: look at this https://bitbucket.org/blackaura/pyparsephp
 # TODO: look at this https://github.com/ramen/phply
 # TODO: get proper line endings
+# TODO: line up ternary statements
 import sublime
 import sublime_plugin
 
 
 class VanityPhpCommand(sublime_plugin.TextCommand):
+
+    SETTINGS_GROUP_SUBLIME = 'Sublime'
+    SETTINGS_GROUP_PHPVANITY = 'PhpVanity'
 
     control_tokens = ['if', 'for', 'foreach', 'switch']
 
@@ -18,6 +21,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
     def run(self, edit, **kwargs):
 
         print 'vanity'
+        print self.line_ending()
 
         action = kwargs.get('action', None)
 
@@ -30,12 +34,12 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
         else:
             print "Vanity doesn't know what to do."
 
+    # TODO: Check for the presence of the alignment plugin
     # TODO: handle the situation where there's a array element on the same line as the array keyword
     def array_format(self, edit):
         print "array_format"
 
         sels = self.view.sel()
-        settings = sublime.load_settings("Default.sublime-settings")
 
         for sel in sels:
 
@@ -60,7 +64,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
             # if (whitespace / 2) != 1:
             #     print "we have some bad indentation here"
 
-            desired_indent = whitespace + settings.get('array_indent')
+            desired_indent = whitespace + self.setting(self.SETTINGS_GROUP_PHPVANITY, 'array_indent')
 
             # iterate through the lines, and indent accordingly
             # TODO: ignore nested arrays
@@ -239,3 +243,21 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
             # replace and we're done
             self.view.replace(edit, lines_sel, controlLine + codeLinesRaw[1] + closingCurly)
+
+    def setting(self, group, setting):
+
+        if group == 'Sublime':
+            settings = self.view.settings()
+        elif group == 'PhpVanity':
+            settings = sublime.load_settings("Default.sublime-settings")
+
+        return settings.get(setting)
+
+    def line_ending(self):
+
+        ending = self.setting(self.SETTINGS_GROUP_SUBLIME, 'default_line_ending')
+
+        if ending == 'unix':
+            return "\n"
+        elif ending == 'windows':
+            return "\r\n"
