@@ -7,6 +7,7 @@
 # TODO: line up ternary statements
 import sublime
 import sublime_plugin
+# import re
 
 
 class VanityPhpCommand(sublime_plugin.TextCommand):
@@ -27,6 +28,8 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
         if action == 'control_statements':
             self.control_statements(edit)
+        if action == 'control_spacing':
+            self.control_spacing(edit)
         elif action == 'single_line_curlies':
             self.single_line_curlies(edit)
         elif action == 'array_format':
@@ -243,6 +246,87 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
             # replace and we're done
             self.view.replace(edit, lines_sel, controlLine + codeLinesRaw[1] + closingCurly)
+
+    # TODO: Make sure there's only one lines
+    def control_spacing(self, edit):
+        print "control_spacing"
+
+        sels = self.view.sel()
+        for sel in sels:
+
+            lines_sel = self.view.line(sel)
+            replacement = self.view.substr(lines_sel)
+
+            # self.fix_paren_spacing(replacement)
+            # return()
+
+            # Find the position of the first / opening paren
+            open_pos = replacement.find('(')
+
+            # Check the next char is whitespace
+            if replacement[open_pos+1] != ' ':
+                replacement = replacement.replace('(', '( ', 1)
+
+            # count # of opening + closing parens on the line.
+            num_open_parens = replacement.count('(')
+            num_close_parens = replacement.count(')')
+
+            if num_close_parens != num_open_parens:
+                print "No closing on this line"
+            else:
+                if replacement[open_pos-1] != ' ':
+                    replacement = self.rreplace(replacement, ')', ' )', 1)
+
+            self.view.replace(edit, lines_sel, replacement)
+
+    def fix_paren_spacing(edit, s):
+
+        for paren in [('(', '( ', 'add'), (')', ' )', 'sub')]:
+
+            offset = 0
+
+            # print '|'+paren[0]+'|'
+            # print '|'+paren[1]+'|'
+            # print '|'+paren[2]+'|'
+
+            pos = s.find(paren[0], offset)
+
+            print pos
+
+            while pos != -1:
+
+                print s
+
+                if paren[2] == 'add':
+                    start_end = pos
+                elif paren[2] == 'sub':
+                    start_end = pos
+
+                if paren[2] == 'add':
+                    end_start = pos+1
+                elif paren[2] == 'sub':
+                    end_start = pos + 1
+
+                start = s[0:start_end]
+                end = s[end_start:len(s)]
+
+                print start
+                print end
+
+                s = start + paren[1] + end
+
+                print s
+
+                if paren[2] == 'add':
+                    offset = pos+1
+                elif paren[2] == 'sub':
+                    offset = pos+2
+
+                pos = s.find(paren[0], offset)
+
+    def rreplace(edit, s, old, new, occurrence):
+        li = s.rsplit(old, occurrence)
+        return new.join(li)
 
     def setting(self, group, setting):
 

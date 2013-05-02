@@ -1,6 +1,8 @@
 [
     { "keys": ["super+alt+v"], "command": "vanity_php", "args" : { "action": "control_statements" } },
 
+    { "keys": ["super+alt+z"], "command": "vanity_php", "args" : { "action": "control_spacing" } },
+
     { "keys": ["super+alt+b"], "command": "vanity_php", "args" : { "action": "single_line_curlies" } },
 
     { "keys": ["super+alt+a"], "command": "vanity_php", "args" : { "action": "array_format" } }

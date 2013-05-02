@@ -9,11 +9,19 @@
 
 $x = false;
 
-if($x = 2)
+if($x == 2)
   echo 'yaya!';
 
 
-if($x = 2) // a comment
+if($x == 2) // a comment
+  echo 'yaya!';
+
+
+if(($x == 2) && $y)
+  echo 'yaya!';
+
+ if(((($x) == 2) && ($z))
+  && $y)
   echo 'yaya!';
 
 
