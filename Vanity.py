@@ -50,17 +50,11 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
             array_region = self.find_array_region(region)
 
-            # Figure out how much whitespace is in front of the declaration
             array_lines = self.view.lines(array_region)
             declaration = self.view.substr(array_lines[0])
 
-            # TODO: probably need a better way to do this
-            whitespace = 0
-            for c in declaration:
-                if c == ' ':
-                    whitespace += 1
-                else:
-                    break
+            # Figure out how much whitespace is in front of the declaration
+            whitespace = self.leading_whitespace(declaration)
 
             # Check if there's valid indentation
             # TODO: show the user something, cuz this is bad.
@@ -323,6 +317,17 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
                     offset = pos+2
 
                 pos = s.find(paren[0], offset)
+
+    # TODO: probably need a better way to do this
+    def leading_whitespace(edit, s):
+        whitespace = 0
+        for c in s:
+            if c == ' ':
+                whitespace += 1
+            else:
+                break
+
+        return whitespace
 
     def rreplace(edit, s, old, new, occurrence):
         li = s.rsplit(old, occurrence)
