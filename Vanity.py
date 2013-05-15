@@ -5,6 +5,10 @@
 # TODO: look at this https://github.com/ramen/phply
 # TODO: get proper line endings
 # TODO: line up ternary statements
+# TODO: separate out logic for finding selection from logic for making changes
+# TODO: pass strings everywhere instead of coordinates (also, figure which situations are best)
+# TODO: implement a debug mode.
+# TODO: implement something to automatically fix function name comments.
 import sublime
 import sublime_plugin
 # import re
@@ -126,6 +130,7 @@ class VanityPhpCommand(sublime_plugin.TextCommand):
 
         closing = False
         while closing is False:
+            # TODO: make this a regex that ignores whitespace
             if self.view.substr(line_below).find(');') != -1:
                 closing = line_below
                 break
